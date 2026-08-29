@@ -14,7 +14,7 @@ for attempt in range(1, 4):
             web_data = response.json()
             break
 
-        if response.status_code in (500, 502, 503, 429):
+        if response.status_code in (500, 502, 503, 429, 403):
             print("There was an error with getting a valid response, we'll try again")
             time.sleep(2)
             print(f"Attempt {attempt} has failed retriying")
@@ -23,17 +23,23 @@ for attempt in range(1, 4):
                 print("All attempts have failed :(")
                 break
         else:
-            print(f"anything else: {response.status_code}")
+            print(f"Failiure code not recognized: {response.status_code}")
+            break
 
     except requests.exceptions.RequestException as e:
         print(f"sorry but the request itself has failed: {e}")
 
-
 #Looping through the JSON output
+
+domain_set = set()
 for certificate in web_data:
     for domain in certificate["dns_names"]:
-        print(domain)
-        
+        domain_set.add(domain)
+        if domain.startswith("*."): 
+            domain_set.remove(domain)
+
+print(*domain_set, sep="\n") #print domain on every line
+
 
 
 
