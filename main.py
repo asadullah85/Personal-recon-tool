@@ -1,14 +1,23 @@
 import requests
 import time
+import sys
 
-base_domain = input("Type in your website: ")
 
+if len(sys.argv) == 1:
+    print("You did not enter a website! ")
+    sys.exit()
+
+if len(sys.argv) > 2:
+    print("too many argumants, only put one domain! ")
+    sys.exit()
+
+base_domain = sys.argv[1]
 headers = {"User-Agent": "Mozilla/5.0"}
 
 def fetch_subdomains(url, source_name):
     for attempt in range(1, 4):
         try:
-            response = requests.get(url, headers=headers, timeout=20)
+            response= requests.get(url, headers=headers, timeout=20)
             if response.status_code == 200:
                 print(f"{source_name} succeeded with {response.status_code}")
                 return response.json()
@@ -47,16 +56,17 @@ else:
         print("No certificates found for this domain.")
 
     else:
-        if "dns_names" in web_data[0]:  # CertSpotter shape
-            for certificate in web_data:
+        # Classify each certificate by its own shape instead of inspecting web_data[0].
+        for certificate in web_data:
+            if "dns_names" in certificate:  # CertSpotter shape for this certificate
                 for domain in certificate.get("dns_names", []):
-                    if domain != None and not domain.startswith("*."):
+                    if domain is not None and not domain.startswith("*."):
                         domain_set.add(domain)
 
-        else:  # crt.sh shape (name_value, newline-separated)
-            for certificate in web_data:
-                for domain in certificate.get("name_value", "").split("\n"):
-                    if domain != None and not domain.startswith("*."):
+            else:  # fallback (crt.sh shape: name_value, newline-separated)
+                name_value = certificate.get("name_value", "")
+                for domain in str(name_value).split("\n"):
+                    if domain is not None and not domain.startswith("*."):
                         domain_set.add(domain)
 
         print(*domain_set, sep="\n")
