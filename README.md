@@ -1,4 +1,4 @@
-# subrecon
+# Subrecon
 
 A passive subdomain reconnaissance tool for discovering subdomains through Certificate Transparency (CT) log queries.
 
