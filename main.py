@@ -24,7 +24,10 @@ def fetch_subdomains(url, source_name):
                 print(f"{source_name}: failure code not recognized: {response.status_code}")
                 return None
 
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.JSONDecodeError as json_err:
+                    print(f"Sorry, but the API response is not valid JSON: {json_err}") # Error handling for a failed JSON response
+
+        except requests.exceptions.RequestException as e: # adds error handling for exceptions that aren't recognized
             print(f"{source_name}: sorry but the request itself has failed: {e}")
 
     return None
@@ -35,23 +38,25 @@ crtsh_url = f"https://crt.sh/?q=%25.{base_domain}&output=json"
 web_data = fetch_subdomains(certspotter_url, "CertSpotter")
 
 if web_data is None:
-    print("Falling back to crt.sh...")
-    web_data = fetch_subdomains(crtsh_url, "crt.sh")
-
-if web_data is None:
     print("Both sources failed. Exiting.")
+
 else:
     domain_set = set()
 
-    if "dns_names" in web_data[0]:  # CertSpotter shape
-        for certificate in web_data:
-            for domain in certificate["dns_names"]:
-                if not domain.startswith("*."):
-                    domain_set.add(domain)
-    else:  # crt.sh shape (name_value, newline-separated)
-        for certificate in web_data:
-            for domain in certificate["name_value"].split("\n"):
-                if not domain.startswith("*."):
-                    domain_set.add(domain)
+    if web_data == []:
+        print("No certificates found for this domain.")
 
-    print(*domain_set, sep="\n")
+    else:
+        if "dns_names" in web_data[0]:  # CertSpotter shape
+            for certificate in web_data:
+                for domain in certificate.get("dns_names", []):
+                    if domain != None and not domain.startswith("*."):
+                        domain_set.add(domain)
+
+        else:  # crt.sh shape (name_value, newline-separated)
+            for certificate in web_data:
+                for domain in certificate.get("name_value", "").split("\n"):
+                    if domain != None and not domain.startswith("*."):
+                        domain_set.add(domain)
+
+        print(*domain_set, sep="\n")
