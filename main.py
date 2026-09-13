@@ -1,6 +1,8 @@
 import requests
 import time
 import sys
+import dns.resolver
+from prefix import prefixes_list
 
 
 if len(sys.argv) == 1:
@@ -10,9 +12,9 @@ if len(sys.argv) == 1:
 if len(sys.argv) > 2:
     print("too many argumants, only put one domain! ")
     sys.exit()
-
 base_domain = sys.argv[1]
 headers = {"User-Agent": "Mozilla/5.0"}
+
 
 def fetch_subdomains(url, source_name):
     for attempt in range(1, 4):
@@ -44,8 +46,21 @@ def fetch_subdomains(url, source_name):
 certspotter_url = f"https://api.certspotter.com/v1/issuances?domain={base_domain}&include_subdomains=true&expand=dns_names"
 crtsh_url = f"https://crt.sh/?q=%25.{base_domain}&output=json"
 
-web_data = fetch_subdomains(certspotter_url, "CertSpotter")
 
+def resolve_subdomain(candidate):
+    try:
+        answers = dns.resolver.resolve(candidate, 'A')
+        return [answer.to_text() for answer in answers]
+    except dns.resolver.NXDOMAIN:
+        return None 
+    
+for prefix in prefixes_list:
+    candidate = f"{prefix}.{base_domain}"
+    result = resolve_subdomain(candidate)
+    if result:
+        print(f"{candidate} -> {result}")
+    
+web_data = fetch_subdomains(certspotter_url, "CertSpotter")
 if web_data is None:
     print("Both sources failed. Exiting.")
 
@@ -70,3 +85,4 @@ else:
                         domain_set.add(domain)
 
         print(*domain_set, sep="\n")
+
