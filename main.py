@@ -5,21 +5,22 @@ import dns.resolver
 from prefix import prefixes_list
 
 
-if len(sys.argv) == 1: # fix the bug here next
-    print("You did not enter a website! ")
+if len(sys.argv) == 1: 
+    print("You did not enter a website")
     sys.exit()
 
 if len(sys.argv) > 2:
-    print("too many argumants, only put one domain! ")
-    sys.exit()
-base_domain = sys.argv[1]
-headers = {"User-Agent": "Mozilla/5.0"}
+   print("too many argumants, only put one domain! ")
+   sys.exit()
 
+base_domain =   sys.argv[1] 
+
+headers = {"User-Agent": "Mozilla/5.0"}
 
 def fetch_subdomains(url, source_name):
     for attempt in range(1, 4):
         try:
-            response= requests.get(url, headers=headers, timeout=20)
+            response = requests.get(url, headers=headers, timeout=20)
             if response.status_code == 200:
                 print(f"{source_name} succeeded with {response.status_code}")
                 return response.json()
@@ -47,26 +48,39 @@ certspotter_url = f"https://api.certspotter.com/v1/issuances?domain={base_domain
 crtsh_url = f"https://crt.sh/?q=%25.{base_domain}&output=json"
 
 
-def resolve_subdomain(candidate):
-    try:
-        answers = dns.resolver.resolve(candidate, 'A')
-        return [answer.to_text() for answer in answers]
-    except dns.resolver.NXDOMAIN:
-        return None 
+
+def resolve_subdomain(candidate): #resolves all Ip's
+        try:
+            answers = dns.resolver.resolve(candidate, 'A')
+            return [answer.to_text() for answer in answers]
+        except dns.resolver.NXDOMAIN:
+            return None 
     
+        except dns.resolver.NoNameservers: 
+            return None
+
+        except dns.resolver.NoAnswer:
+            return None
+
+        except dns.resolver.Timeout:
+            print ("failed to receive a response in time")
+
+storage = {}
+
 for prefix in prefixes_list:
     candidate = f"{prefix}.{base_domain}"
     result = resolve_subdomain(candidate)
+    storage[candidate] = result
     if result:
         print(f"{candidate} -> {result}")
-    
+        
+
+        
 web_data = fetch_subdomains(certspotter_url, "CertSpotter")
 if web_data is None:
-    print("Both sources failed. Exiting.")
-
+     print("Both sources failed. Exiting.")
 else:
     domain_set = set()
-
     if web_data == []:
         print("No certificates found for this domain.")
 
@@ -75,14 +89,21 @@ else:
         for certificate in web_data:
             if "dns_names" in certificate:  # CertSpotter shape for this certificate
                 for domain in certificate.get("dns_names", []):
-                    if domain is not None and not domain.startswith("*."):
+                    if domain is not None and not domain.startswith("*.") :
                         domain_set.add(domain)
+                        for candidate, result in storage.items():
+                            if result is not None:
+                                domain_set.add(candidate)
 
             else:  # fallback (crt.sh shape: name_value, newline-separated)
                 name_value = certificate.get("name_value", "")
                 for domain in str(name_value).split("\n"):
-                    if domain is not None and not domain.startswith("*."):
-                        domain_set.add(domain)
+                    if domain is not None and not domain.startswith("*.") :
+                      domain_set.add(domain)
+                      for candidate, result in storage.items():
+                        if result is not None:
+                            domain_set.add(candidate)
+                     
+
 
         print(*domain_set, sep="\n")
-
