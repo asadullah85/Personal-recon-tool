@@ -5,7 +5,7 @@ import dns.resolver
 from prefix import prefixes_list
 
 
-if len(sys.argv) == 1:
+if len(sys.argv) == 1: # fix the bug here next
     print("You did not enter a website! ")
     sys.exit()
 
