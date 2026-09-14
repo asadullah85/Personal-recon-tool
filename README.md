@@ -4,7 +4,7 @@ A passive subdomain reconnaissance tool for discovering subdomains through Certi
 
 ## Overview
 
-subrecon identifies subdomains by querying public Certificate Transparency logs. Every HTTPS certificate issued by a Certificate Authority is permanently logged in CT logs—including certificates for staging environments, admin panels, and other infrastructure that may not be publicly advertised. subrecon leverages this data to passively discover subdomains without any active scanning or probing of target systems.
+subrecon identifies subdomains by querying public Certificate Transparency logs. Every HTTPS certificate issued by a Certificate Authority is permanently logged in CT logs—including certificates [...]
 
 ## Features
 
@@ -50,8 +50,8 @@ This is an early-stage learning and portfolio project under active development. 
 - Domains you own
 - Domains where you have explicit written permission to perform testing (e.g., published bug bounty program scope)
 
-While Certificate Transparency lookups are passive and non-invasive, always respect responsible disclosure practices and obtain proper authorization before conducting any security reconnaissance. Unauthorized testing may violate applicable laws.
+While Certificate Transparency lookups are passive and non-invasive, always respect responsible disclosure practices and obtain proper authorization before conducting any security reconnaissance. [...]
 
 ## License
 
-[License to be determined]
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
