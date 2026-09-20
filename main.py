@@ -73,9 +73,7 @@ for prefix in prefixes_list:
     storage[candidate] = result
     if result:
         print(f"{candidate} -> {result}")
-        
-
-        
+   
 web_data = fetch_subdomains(certspotter_url, "CertSpotter")
 if web_data is None:
      print("Both sources failed. Exiting.")
@@ -89,21 +87,18 @@ else:
         for certificate in web_data:
             if "dns_names" in certificate:  # CertSpotter shape for this certificate
                 for domain in certificate.get("dns_names", []):
-                    if domain is not None and not domain.startswith("*.") :
+                    if domain is not None and not domain.startswith("*."):
                         domain_set.add(domain)
-                        for candidate, result in storage.items():
-                            if result is not None:
-                                domain_set.add(candidate)
 
             else:  # fallback (crt.sh shape: name_value, newline-separated)
                 name_value = certificate.get("name_value", "")
                 for domain in str(name_value).split("\n"):
-                    if domain is not None and not domain.startswith("*.") :
-                      domain_set.add(domain)
-                      for candidate, result in storage.items():
-                        if result is not None:
-                            domain_set.add(candidate)
-                     
+                    if domain is not None and not domain.startswith("*."):
+                        domain_set.add(domain)
 
+   
+    for candidate, result in storage.items():
+        if result is not None:
+            domain_set.add(candidate)
 
-        print(*domain_set, sep="\n")
+    print(*domain_set, sep="\n")
