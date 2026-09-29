@@ -37,9 +37,9 @@ def fetch_subdomains(url, source_name):
                 return None
 
         except requests.exceptions.JSONDecodeError as json_err:
-                    print(f"Sorry, but the API response is not valid JSON: {json_err}") # Error handling for a failed JSON response
+                    print(f"Sorry, but the API response is not valid JSON: {json_err}")
 
-        except requests.exceptions.RequestException as e: # adds error handling for exceptions that aren't recognized
+        except requests.exceptions.RequestException as e:
             print(f"{source_name}: sorry but the request itself has failed: {e}")
 
     return None
@@ -48,28 +48,37 @@ certspotter_url = f"https://api.certspotter.com/v1/issuances?domain={base_domain
 crtsh_url = f"https://crt.sh/?q=%25.{base_domain}&output=json"
 
 
-
-def resolve_subdomain(candidate): #resolves all Ip's
+def resolve_subdomain(candidate):
         try:
             answers = dns.resolver.resolve(candidate, 'A')
             return [answer.to_text() for answer in answers]
         except dns.resolver.NXDOMAIN:
             return None 
-    
         except dns.resolver.NoNameservers: 
             return None
-
         except dns.resolver.NoAnswer:
             return None
-
         except dns.resolver.Timeout:
-            print ("failed to receive a response in time")
+            print("failed to receive a response in time")
+
+# --- WILDCARD DETECTION (new) ---
+wildcard_probe = f"zzqxk92held.{base_domain}"
+wildcard_ips = resolve_subdomain(wildcard_probe)
+
+if wildcard_ips:
+    print(f"Warning: wildcard DNS detected on {base_domain} (fake probe resolved to {wildcard_ips})")
+else:
+    print("No wildcard DNS detected.")
 
 storage = {}
 
 for prefix in prefixes_list:
     candidate = f"{prefix}.{base_domain}"
     result = resolve_subdomain(candidate)
+
+    if wildcard_ips and result == wildcard_ips:
+        continue
+
     storage[candidate] = result
     if result:
         print(f"{candidate} -> {result}")
@@ -83,20 +92,18 @@ else:
         print("No certificates found for this domain.")
 
     else:
-        # Classify each certificate by its own shape instead of inspecting web_data[0].
         for certificate in web_data:
-            if "dns_names" in certificate:  # CertSpotter shape for this certificate
+            if "dns_names" in certificate:
                 for domain in certificate.get("dns_names", []):
                     if domain is not None and not domain.startswith("*."):
                         domain_set.add(domain)
 
-            else:  # fallback (crt.sh shape: name_value, newline-separated)
+            else:
                 name_value = certificate.get("name_value", "")
                 for domain in str(name_value).split("\n"):
                     if domain is not None and not domain.startswith("*."):
                         domain_set.add(domain)
 
-   
     for candidate, result in storage.items():
         if result is not None:
             domain_set.add(candidate)
