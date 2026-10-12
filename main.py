@@ -5,15 +5,20 @@ import dns.resolver
 from prefix import prefixes_list
 
 
-if len(sys.argv) == 1: 
-    print("You did not enter a website")
+if len(sys.argv) > 2:
+    print("too many argumants, only put one domain! ")
     sys.exit()
 
-if len(sys.argv) > 2:
-   print("too many argumants, only put one domain! ")
-   sys.exit()
-
-base_domain =   sys.argv[1] 
+if len(sys.argv) == 1:
+    try:
+        base_domain = input("Enter a website: ").strip()
+    except EOFError:
+        sys.exit()
+    if not base_domain:
+        print("You did not enter a website")
+        sys.exit()
+else:
+    base_domain = sys.argv[1]
 
 headers = {"User-Agent": "Mozilla/5.0"}
 
@@ -61,7 +66,6 @@ def resolve_subdomain(candidate):
         except dns.resolver.Timeout:
             print("failed to receive a response in time")
 
-# --- WILDCARD DETECTION (new) ---
 wildcard_probe = f"zzqxk92held.{base_domain}"
 wildcard_ips = resolve_subdomain(wildcard_probe)
 
