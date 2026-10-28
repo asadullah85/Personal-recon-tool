@@ -1,6 +1,6 @@
 import sys
-from prefix import prefixes_list
-from core import fetch_subdomains, resolve_subdomain, headers
+from core import fetch_subdomains, resolve_subdomain
+from concurrency import dns_brute_forcing
 
 
 if len(sys.argv) > 2:
@@ -29,19 +29,12 @@ if wildcard_ips:
 else:
     print("No wildcard DNS detected.")
 
-storage = {}
+storage = {
 
-for prefix in prefixes_list:
-    candidate = f"{prefix}.{base_domain}"
-    result = resolve_subdomain(candidate)
+}
 
-    if wildcard_ips and result == wildcard_ips:
-        continue
+storage = dns_brute_forcing(base_domain, wildcard_ips)
 
-    storage[candidate] = result
-    if result:
-        print(f"{candidate} -> {result}")
-   
 web_data = fetch_subdomains(certspotter_url, "CertSpotter")
 if web_data is None:
      print("Both sources failed. Exiting.")
