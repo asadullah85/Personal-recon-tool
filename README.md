@@ -4,7 +4,7 @@ A passive subdomain reconnaissance tool for discovering subdomains through Certi
 
 ## Overview
 
-subrecon identifies subdomains by querying public Certificate Transparency logs. Every HTTPS certificate issued by a Certificate Authority is permanently logged in CT logs—including certificates [...]
+subrecon identifies subdomains by querying public Certificate Transparency logs. Every HTTPS certificate issued by a Certificate Authority is permanently logged in CT logs—including certificates that may reveal the names of subdomains before they are publicly announced.
 
 ## Features
 
@@ -13,6 +13,8 @@ subrecon identifies subdomains by querying public Certificate Transparency logs.
 - **Retry logic** — automatically retries failed requests up to 3 times before falling back to alternative sources
 - **Wildcard filtering** — excludes wildcard certificate entries (e.g., `*.example.com`) since they don't represent resolvable hosts
 - **Deduplication** — returns a clean, unique list of subdomains (the same subdomain often appears across multiple certificates)
+- **Active DNS brute-forcing** — resolves a wordlist of common subdomain prefixes against the target, with wildcard DNS detection to filter false positives
+- **Concurrent resolution** — DNS lookups run in parallel via a thread pool for faster scans
 - **Lightweight** — Python CLI tool with only `requests` library as a dependency; no database or external services required
 
 ## Installation
@@ -32,17 +34,15 @@ subrecon identifies subdomains by querying public Certificate Transparency logs.
 
 Run subrecon against a domain:
 ```bash
-python subrecon.py example.com
+python main.py example.com
 ```
 
 The tool will query CT logs and output a deduplicated list of discovered subdomains.
 
 ## Project Status
 
-This is an early-stage learning and portfolio project under active development. Current release supports passive CT log lookup only. Planned features for future versions include:
-- Active DNS brute-forcing
-- Concurrent requests for improved performance
-- Host fingerprinting and service detection
+This is an early-stage learning and portfolio project under active development. Current release supports passive CT log lookup and active DNS brute-forcing with concurrent resolution. Planned features for future versions include:
+Host fingerprinting and service detection
 
 ## Disclaimer
 
@@ -50,7 +50,7 @@ This is an early-stage learning and portfolio project under active development. 
 - Domains you own
 - Domains where you have explicit written permission to perform testing (e.g., published bug bounty program scope)
 
-While Certificate Transparency lookups are passive and non-invasive, always respect responsible disclosure practices and obtain proper authorization before conducting any security reconnaissance. [...]
+While Certificate Transparency lookups are passive and non-invasive, always respect responsible disclosure practices and obtain proper authorization before conducting any security reconnaissance. Use of this tool outside authorized scope may violate laws and regulations.
 
 ## License
 
