@@ -1,57 +1,71 @@
 # Subrecon
 
-A passive subdomain reconnaissance tool for discovering subdomains through Certificate Transparency (CT) log queries.
+A subdomain reconnaissance CLI tool that combines passive Certificate Transparency (CT) log discovery with active DNS brute-forcing.
 
 ## Overview
 
-subrecon identifies subdomains by querying public Certificate Transparency logs. Every HTTPS certificate issued by a Certificate Authority is permanently logged in CT logs—including certificates that may reveal the names of subdomains before they are publicly announced.
+subrecon finds subdomains in two ways:
+
+- **Passive:** it queries public Certificate Transparency logs. Every HTTPS certificate issued by a Certificate Authority is permanently logged, including certificates that may reveal subdomain names before they are publicly announced.
+- **Active:** it resolves a wordlist of common subdomain prefixes against the target, filtering out wildcard DNS false positives.
+
+Results from both methods are merged into one deduplicated list.
 
 ## Features
 
-- **Passive CT log queries** — discovers subdomains through public certificate logs without sending traffic to target systems
-- **Multiple data sources** — queries CertSpotter API with automatic fallback to crt.sh if the primary source is unavailable
-- **Retry logic** — automatically retries failed requests up to 3 times before falling back to alternative sources
-- **Wildcard filtering** — excludes wildcard certificate entries (e.g., `*.example.com`) since they don't represent resolvable hosts
-- **Deduplication** — returns a clean, unique list of subdomains (the same subdomain often appears across multiple certificates)
-- **Active DNS brute-forcing** — resolves a wordlist of common subdomain prefixes against the target, with wildcard DNS detection to filter false positives
-- **Concurrent resolution** — DNS lookups run in parallel via a thread pool for faster scans
-- **Lightweight** — Python CLI tool with only `requests` library as a dependency; no database or external services required
+**Passive discovery**
+- **CT log queries:** discovers subdomains through public certificate logs without sending traffic to the target
+- **Multiple data sources:** queries the CertSpotter API, with automatic fallback to crt.sh if the primary source is unavailable
+- **Retry logic:** retries failed requests up to 3 times before giving up on a source
+- **Wildcard certificate filtering:** excludes entries like `*.example.com`, since they don't represent resolvable hosts
+- **Deduplication:** the same subdomain often appears across many certificates, so results are returned as a unique set
+
+**Active discovery**
+- **DNS brute-forcing:** resolves a built-in wordlist of common prefixes (`www`, `mail`, `api`, ...) against the target
+- **Wildcard DNS detection:** resolves a random nonexistent name first; any candidate that resolves to the same IP is discarded as a false positive
+- **Concurrent resolution:** DNS lookups run in parallel via a thread pool for faster scans
+
+**General**
+- **Lightweight:** Python CLI with two dependencies (`requests`, `dnspython`); no database or external services required
 
 ## Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/asadullah85/Personal-recon-tool.git
-   cd Personal-recon-tool
-   ```
+
+```
+git clone https://github.com/asadullah85/Personal-recon-tool.git
+cd Personal-recon-tool
+```
 
 2. Install dependencies:
-   ```bash
-   pip install requests
-   ```
+
+```
+pip install requests dnspython
+```
 
 ## Usage
 
-Run subrecon against a domain:
-```bash
+```
 python main.py example.com
 ```
 
-The tool will query CT logs and output a deduplicated list of discovered subdomains.
+The tool checks for wildcard DNS, runs the DNS brute-force, queries CT logs, and prints a merged, deduplicated list of discovered subdomains.
 
 ## Project Status
 
-This is an early-stage learning and portfolio project under active development. Current release supports passive CT log lookup and active DNS brute-forcing with concurrent resolution. Planned features for future versions include:
-Host fingerprinting and service detection
+This is an early-stage portfolio project under active development. The current version supports passive CT log lookup and active DNS brute-forcing with concurrent resolution.
+
+Planned: host fingerprinting and service detection.
 
 ## Disclaimer
 
-**Authorization Required:** This tool should only be used against:
-- Domains you own
-- Domains where you have explicit written permission to perform testing (e.g., published bug bounty program scope)
+**Authorization required:** only use this tool against:
 
-While Certificate Transparency lookups are passive and non-invasive, always respect responsible disclosure practices and obtain proper authorization before conducting any security reconnaissance. Use of this tool outside authorized scope may violate laws and regulations.
+- Domains you own
+- Domains where you have explicit written permission to test (e.g., published bug bounty program scope)
+
+CT log lookups are passive, but the DNS brute-force sends queries for names under the target domain. Always respect responsible disclosure practices and get proper authorization before doing any security reconnaissance. Use outside authorized scope may violate laws and regulations.
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/asadullah85/Personal-recon-tool/blob/main/LICENSE) file for details.
