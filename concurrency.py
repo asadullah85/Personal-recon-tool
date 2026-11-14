@@ -16,7 +16,11 @@ def dns_brute_forcing(base_domain, wildcard_ips):
 
         for future in as_completed(future_to_candidate):
             candidate = future_to_candidate[future]
-            ips = future.result()
+            try:
+                ips = future.result()
+            except Exception as e:
+                print(f"{candidate}: lookup failed ({type(e).__name__}: {e})")
+                continue
 
             if ips is None:
                 continue
@@ -27,3 +31,11 @@ def dns_brute_forcing(base_domain, wildcard_ips):
             result[candidate] = ips
 
     return result
+<<<<<<< HEAD
+=======
+
+
+
+
+
+>>>>>>> 1d6e034 (Add scan history and improve subdomain enumeration)

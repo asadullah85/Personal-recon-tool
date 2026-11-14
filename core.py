@@ -1,4 +1,4 @@
-import requests #this is core.py I
+import requests #this is core.py 
 import time
 import dns.resolver
 
