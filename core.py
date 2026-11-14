@@ -43,4 +43,3 @@ def resolve_subdomain(candidate):
             return None
         except dns.resolver.Timeout:
             print("failed to receive a response in time")
-##################################

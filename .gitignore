@@ -33,9 +33,6 @@ share/python-wheels/
 # pytest
 .pytest_cache/
 
-# Project database
-subrecon.db
-
 # IDE and editor files
 .vscode/
 .idea/
@@ -51,4 +48,3 @@ subrecon.db
 
 # OS-specific files
 Thumbs.db
-subrecon.db

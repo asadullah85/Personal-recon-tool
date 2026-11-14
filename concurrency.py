@@ -31,4 +31,3 @@ def dns_brute_forcing(base_domain, wildcard_ips):
             result[candidate] = ips
 
     return result
- #################################
