@@ -42,4 +42,4 @@ def save_scan(conn, domain, subdomains):
 
 
 def diff_scans(previous, current):
-    return current - previous, previous - current  # (new, gone)
+    return current - previous, previous - current  # (new, gone!!)
