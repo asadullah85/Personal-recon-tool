@@ -31,11 +31,3 @@ def dns_brute_forcing(base_domain, wildcard_ips):
             result[candidate] = ips
 
     return result
-<<<<<<< HEAD
-=======
-
-
-
-
-
->>>>>>> 1d6e034 (Add scan history and improve subdomain enumeration)
